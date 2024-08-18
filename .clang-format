@@ -1,0 +1,2 @@
+CompileFlags:
+  Add: [-std=c++17, -I/nix/store/d4j9r29chin4kaxcy27lrqbjclldvn6x-vulkan-headers-1.3.268.0/include]

@@ -93,27 +93,68 @@ void decode_and_execute() {
             // call subroutine at opcode & 0x0FFF
             break;
         case 0x3000:
-            x = opcode & 0x0F00 >> 8;
+            x = (opcode & 0x0F00) >> 8;
             kk = opcode & 0x00FF;
             if (get_opcode_at(x) == kk) {
                 pc += 2;
             }
             break;
         case 0x4000:
-            x = opcode & 0x0F00 >> 8;
+            x = (opcode & 0x0F00) >> 8;
             kk = opcode & 0x00FF;
             if (get_opcode_at(x) != kk) {
                 pc += 2;
             }
+            break;
         case 0x5000:
             x = opcode & 0x0F00;
             y = opcode & 0x00F0;
             if (get_opcode_at(x) == get_opcode_at(y)) {
                 pc += 2;
             }
+            break;
         case 0x6000:
+            x = (opcode & 0x0F00) >> 8;
+            V[x] = (opcode & 0x00F0) >> 4;
+            V[x + 1] = opcode & 0x000F;
+            break;
         case 0x7000:
+            x = opcode & 0x0F00 >> 8;
+            kk = opcode & 0x00FF;
+            kk += get_opcode_at(x);
+            V[x] = kk >> 4;
+            V[x + 1] = kk & 0xF;
+            break;
         case 0x8000:
+            x = (opcode & 0x0F00) >> 8;
+            y = (opcode & 0x00F0) >> 4;
+            switch (opcode & 0x000F) {
+                case 0x0:
+                    kk = get_opcode_at(y);
+                    break;
+                case 0x1:
+                    kk = get_opcode_at(x) | get_opcode_at(y);
+                    break;
+                case 0x2:
+                    kk = get_opcode_at(x) & get_opcode_at(y);
+                    break;
+                case 0x3:
+                    kk = get_opcode_at(x) ^ get_opcode_at(y);
+                    break;
+                case 0x4:
+                    break;
+                case 0x5:
+                    break;
+                case 0x6:
+                    break;
+                case 0x7:
+                    break;
+                case 0xE:
+                    break;
+            }
+            V[x] = kk >> 4;
+            V[x + 1] = kk & 0x0F;
+
         case 0x9000:
         case 0xA000:
         case 0xB000:

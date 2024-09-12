@@ -1,10 +1,15 @@
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_render.h>
+#include <SDL2/SDL_stdinc.h>
 #include <cstring>
 
 const short DISPLAY_WIDTH = 64;
 const short DISPLAY_HEIGHT = 32;
 
-unsigned char memory[4000];
+SDL_Window *window;
+SDL_Renderer *renderer;
+
+unsigned char memory[4096];
 short pc;
 short stack[30];
 unsigned char soundTimer;
@@ -31,7 +36,30 @@ const unsigned char font[80]{
 
 void load_font_in_memory() { memcpy(memory, font, 80 * sizeof(unsigned char)); }
 
+void initialise_display() {
+  SDL_Init(SDL_INIT_VIDEO);
+  window = SDL_CreateWindow("CHIP-8", 0, 0, DISPLAY_WIDTH, DISPLAY_HEIGHT, 0);
+  renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_PRESENTVSYNC);
+}
+
+void fetch() {}
+
+void decode() {}
+
+void execute() {}
+
+void update_display() {}
+
 int main() {
   load_font_in_memory();
+  initialise_display();
+
+  while (false) {
+    fetch();
+    decode();
+    execute();
+    update_display();
+  }
+
   return 0;
 }

@@ -182,12 +182,20 @@ void decode_and_execute() {
             V[x + 1] = kk & 0x0F;
             break;
         case 0x9000:
+            if (get_opcode_at(x) != get_opcode_at(y)) {
+                pc += 2;
+            }
             break;
         case 0xA000:
+            i = opcode & 0xFFF;
             break;
         case 0xB000:
+            pc = (opcode & 0xFFF) + V[0];
             break;
         case 0xC000:
+            kk = (opcode & 0xFF) & rand();
+            V[x] = kk >> 4;
+            V[x + 1] = kk & 0x0F;
             break;
         case 0xD000:
             break;

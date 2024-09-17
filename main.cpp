@@ -82,6 +82,8 @@ void decode_and_execute() {
     unsigned char y;
     unsigned short kk;
 
+    unsigned int sum;
+
     switch (opcode & 0xF000) {
         case 0x0000:
             // jump to machine code routine at opcode & 0x0FFF
@@ -142,26 +144,57 @@ void decode_and_execute() {
                     kk = get_opcode_at(x) ^ get_opcode_at(y);
                     break;
                 case 0x4:
+                    sum = get_opcode_at(x) + get_opcode_at(y);
+                    if (sum > 255) {
+                        V[0xF] = 1;
+                    } else {
+                        V[0xF] = 0;
+                    }
+                    kk = sum & 0xFF;
                     break;
                 case 0x5:
+                    if (get_opcode_at(x) >= get_opcode_at(y
+                        )) {  // Deviation from cowgod's spec, in line with VF = NOT borrow
+                        kk = get_opcode_at(x) - get_opcode_at(y);
+                        V[0xF] = 0;
+                    } else {
+                        kk = get_opcode_at(y) - get_opcode_at(x);
+                        V[0xF] = 1;
+                    }
                     break;
                 case 0x6:
+                    if (get_opcode_at(y)
+                        & 1) {  // Deviation from standard, because this is hoq most roms behave according to octo
+                        V[0xF] = 1;
+                    }
+                    kk = get_opcode_at(y) >> 1;
                     break;
                 case 0x7:
                     break;
                 case 0xE:
+                    if ((V[y] & 0x80) >> 7) {
+                        V[0xF] = 1;
+                    }
+                    kk = get_opcode_at(y) << 1;
                     break;
             }
             V[x] = kk >> 4;
             V[x + 1] = kk & 0x0F;
-
+            break;
         case 0x9000:
+            break;
         case 0xA000:
+            break;
         case 0xB000:
+            break;
         case 0xC000:
+            break;
         case 0xD000:
+            break;
         case 0xE000:
+            break;
         case 0xF000:
+            break;
     }
 }
 

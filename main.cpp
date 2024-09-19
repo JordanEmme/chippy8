@@ -78,11 +78,11 @@ void decode_and_execute() {
         return;
     }
 
-    unsigned char x;
-    unsigned char y;
-    unsigned short kk;
+    unsigned char x = 0;
+    unsigned char y = 0;
+    unsigned short kk = 0;
 
-    unsigned int sum;
+    unsigned int sum = 0;
 
     switch (opcode & 0xF000) {
         case 0x0000:

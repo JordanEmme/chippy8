@@ -2,7 +2,6 @@
 #include <SDL2/SDL_keyboard.h>
 #include <SDL2/SDL_render.h>
 #include <SDL2/SDL_stdinc.h>
-#include <cstring>
 
 const short DISPLAY_WIDTH = 640;
 const short DISPLAY_HEIGHT = 320;
@@ -13,7 +12,7 @@ SDL_Renderer* renderer;
 unsigned char memory[4096];
 
 unsigned short pc;
-unsigned short i;
+unsigned short I;
 
 unsigned short stack[30];
 unsigned short sp;
@@ -21,7 +20,7 @@ unsigned short sp;
 unsigned char V[16];
 unsigned short opcode;
 
-unsigned char display[64 * 32];
+std::byte display[8 * 32];
 
 unsigned char soundTimer;
 unsigned char delayTimer;
@@ -83,6 +82,7 @@ void decode_and_execute() {
     unsigned short kk = 0;
 
     unsigned int sum = 0;
+    unsigned short n = 0;
 
     switch (opcode & 0xF000) {
         case 0x0000:
@@ -187,7 +187,7 @@ void decode_and_execute() {
             }
             break;
         case 0xA000:
-            i = opcode & 0xFFF;
+            I = opcode & 0xFFF;
             break;
         case 0xB000:
             pc = (opcode & 0xFFF) + V[0];
@@ -198,6 +198,13 @@ void decode_and_execute() {
             V[x + 1] = kk & 0x0F;
             break;
         case 0xD000:
+            n = opcode & 0xF;
+            x = (opcode & 0xF00) >> 8;
+            y = (opcode & 0xF0) >> 4;
+
+            for (short i = 0; i < n; i++) {
+                unsigned char byte = memory[I + i];
+            }
             break;
         case 0xE000:
             break;

@@ -156,13 +156,13 @@ void decode_and_execute() {
                     V[x] = V[y];
                     break;
                 case 0x1:
-                    kk = V[x] | V[y];
+                    V[x] = V[x] | V[y];
                     break;
                 case 0x2:
-                    kk = V[x] & V[y];
+                    V[x] = V[x] & V[y];
                     break;
                 case 0x3:
-                    kk = V[x] ^ V[y];
+                    V[x] = V[x] ^ V[y];
                     break;
                 case 0x4:
                     sum = V[x] + V[y];
@@ -171,15 +171,15 @@ void decode_and_execute() {
                     } else {
                         V[0xF] = 0;
                     }
-                    kk = sum & 0xFF;
+                    V[x] = sum & 0xFF;
                     break;
                 case 0x5:
                     // Deviation from cowgod's spec, in line with VF = NOT borrow
                     if (V[x] >= V[y]) {
-                        kk = V[x] - V[y];
+                        V[x] = V[x] - V[y];
                         V[0xF] = 0;
                     } else {
-                        kk = V[y] - V[x];
+                        V[x] = V[y] - V[x];
                         V[0xF] = 1;
                     }
                     break;
@@ -188,7 +188,7 @@ void decode_and_execute() {
                     if (V[y] & 1) {
                         V[0xF] = 1;
                     }
-                    kk = V[y] >> 1;
+                    V[x] = V[y] >> 1;
                     break;
                 case 0x7:
                     break;
@@ -196,11 +196,9 @@ void decode_and_execute() {
                     if ((V[y] & 0x80) >> 7) {
                         V[0xF] = 1;
                     }
-                    kk = V[y] << 1;
+                    V[x] = V[y] << 1;
                     break;
             }
-            V[x] = kk >> 4;
-            V[x + 1] = kk & 0x0F;
             break;
         case 0x9000:
             if (V[x] != V[y]) {
@@ -214,9 +212,7 @@ void decode_and_execute() {
             pc = (opcode & 0xFFF) + V[0];
             break;
         case 0xC000:
-            kk = (opcode & 0xFF) & rand();
-            V[x] = kk >> 4;
-            V[x + 1] = kk & 0x0F;
+            V[x] = (opcode & 0xFF) & rand();
             break;
         case 0xD000:
             n = opcode & 0xF;

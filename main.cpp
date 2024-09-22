@@ -105,7 +105,6 @@ void decode_and_execute() {
     unsigned char y = 0;
     unsigned char kk = 0;
 
-    unsigned int sum = 0;
     unsigned short n = 0;
 
     switch (opcode & 0xF000) {
@@ -165,13 +164,12 @@ void decode_and_execute() {
                     V[x] = V[x] ^ V[y];
                     break;
                 case 0x4:
-                    sum = V[x] + V[y];
-                    if (sum > 255) {
+                    if (V[y] > 255 - V[x]) {
                         V[0xF] = 1;
                     } else {
                         V[0xF] = 0;
                     }
-                    V[x] = sum & 0xFF;
+                    V[x] += V[y];
                     break;
                 case 0x5:
                     // Deviation from cowgod's spec, in line with VF = NOT borrow

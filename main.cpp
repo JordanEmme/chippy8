@@ -1,13 +1,18 @@
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_events.h>
 #include <SDL2/SDL_keyboard.h>
+#include <SDL2/SDL_keycode.h>
 #include <SDL2/SDL_render.h>
+#include <SDL2/SDL_scancode.h>
 #include <SDL2/SDL_stdinc.h>
+#include <SDL2/SDL_video.h>
 
 const short DISPLAY_WIDTH = 640;
 const short DISPLAY_HEIGHT = 320;
 
 SDL_Window* window;
 SDL_Renderer* renderer;
+unsigned char runningState = 1;
 
 unsigned char memory[4096];
 
@@ -46,6 +51,25 @@ const unsigned char font[80] {
     0xF0, 0x80, 0xF0, 0x80, 0x80  // F
 };
 
+const unsigned char keyboardMap[16] {
+    SDL_SCANCODE_X,
+    SDL_SCANCODE_1,
+    SDL_SCANCODE_2,
+    SDL_SCANCODE_3,
+    SDL_SCANCODE_Q,
+    SDL_SCANCODE_W,
+    SDL_SCANCODE_E,
+    SDL_SCANCODE_A,
+    SDL_SCANCODE_S,
+    SDL_SCANCODE_D,
+    SDL_SCANCODE_Z,
+    SDL_SCANCODE_C,
+    SDL_SCANCODE_4,
+    SDL_SCANCODE_R,
+    SDL_SCANCODE_F,
+    SDL_SCANCODE_V
+};
+
 void load_font_in_memory() {
     memcpy(memory, font, 80 * sizeof(unsigned char));
 }
@@ -79,7 +103,7 @@ void decode_and_execute() {
 
     unsigned char x = 0;
     unsigned char y = 0;
-    unsigned short kk = 0;
+    unsigned char kk = 0;
 
     unsigned int sum = 0;
     unsigned short n = 0;
@@ -97,54 +121,51 @@ void decode_and_execute() {
         case 0x3000:
             x = (opcode & 0x0F00) >> 8;
             kk = opcode & 0x00FF;
-            if (get_opcode_at(x) == kk) {
+            if (V[x] == kk) {
                 pc += 2;
             }
             break;
         case 0x4000:
             x = (opcode & 0x0F00) >> 8;
             kk = opcode & 0x00FF;
-            if (get_opcode_at(x) != kk) {
+            if (V[x] != kk) {
                 pc += 2;
             }
             break;
         case 0x5000:
             x = opcode & 0x0F00;
             y = opcode & 0x00F0;
-            if (get_opcode_at(x) == get_opcode_at(y)) {
+            if (V[x] == V[y]) {
                 pc += 2;
             }
             break;
         case 0x6000:
             x = (opcode & 0x0F00) >> 8;
-            V[x] = (opcode & 0x00F0) >> 4;
-            V[x + 1] = opcode & 0x000F;
+            V[x] = opcode & 0x00FF;
             break;
         case 0x7000:
             x = opcode & 0x0F00 >> 8;
             kk = opcode & 0x00FF;
-            kk += get_opcode_at(x);
-            V[x] = kk >> 4;
-            V[x + 1] = kk & 0xF;
+            V[x] += kk;
             break;
         case 0x8000:
             x = (opcode & 0x0F00) >> 8;
             y = (opcode & 0x00F0) >> 4;
             switch (opcode & 0x000F) {
                 case 0x0:
-                    kk = get_opcode_at(y);
+                    V[x] = V[y];
                     break;
                 case 0x1:
-                    kk = get_opcode_at(x) | get_opcode_at(y);
+                    kk = V[x] | V[y];
                     break;
                 case 0x2:
-                    kk = get_opcode_at(x) & get_opcode_at(y);
+                    kk = V[x] & V[y];
                     break;
                 case 0x3:
-                    kk = get_opcode_at(x) ^ get_opcode_at(y);
+                    kk = V[x] ^ V[y];
                     break;
                 case 0x4:
-                    sum = get_opcode_at(x) + get_opcode_at(y);
+                    sum = V[x] + V[y];
                     if (sum > 255) {
                         V[0xF] = 1;
                     } else {
@@ -153,21 +174,21 @@ void decode_and_execute() {
                     kk = sum & 0xFF;
                     break;
                 case 0x5:
-                    if (get_opcode_at(x) >= get_opcode_at(y
-                        )) {  // Deviation from cowgod's spec, in line with VF = NOT borrow
-                        kk = get_opcode_at(x) - get_opcode_at(y);
+                    // Deviation from cowgod's spec, in line with VF = NOT borrow
+                    if (V[x] >= V[y]) {
+                        kk = V[x] - V[y];
                         V[0xF] = 0;
                     } else {
-                        kk = get_opcode_at(y) - get_opcode_at(x);
+                        kk = V[y] - V[x];
                         V[0xF] = 1;
                     }
                     break;
                 case 0x6:
-                    if (get_opcode_at(y)
-                        & 1) {  // Deviation from standard, because this is how most roms behave according to octo
+                    // Deviation from standard, because this is how most roms behave according to octo
+                    if (V[y] & 1) {
                         V[0xF] = 1;
                     }
-                    kk = get_opcode_at(y) >> 1;
+                    kk = V[y] >> 1;
                     break;
                 case 0x7:
                     break;
@@ -175,14 +196,14 @@ void decode_and_execute() {
                     if ((V[y] & 0x80) >> 7) {
                         V[0xF] = 1;
                     }
-                    kk = get_opcode_at(y) << 1;
+                    kk = V[y] << 1;
                     break;
             }
             V[x] = kk >> 4;
             V[x + 1] = kk & 0x0F;
             break;
         case 0x9000:
-            if (get_opcode_at(x) != get_opcode_at(y)) {
+            if (V[x] != V[y]) {
                 pc += 2;
             }
             break;
@@ -227,6 +248,10 @@ void decode_and_execute() {
             }
             break;
         case 0xE000:
+            if (opcode & 0x9E) {
+                x = (opcode & 0xF00) >> 8;
+                if (keyboardStates[keyboardMap[V[x]]]) {}
+            }
             break;
         case 0xF000:
             break;
@@ -239,8 +264,14 @@ int main() {
     load_font_in_memory();
     initialise_display();
     keyboardStates = SDL_GetKeyboardState(NULL);
-
-    while (false) {
+    SDL_Event event;
+    while (runningState) {
+        while (SDL_PollEvent(&event)) {
+            switch (event.type) {
+                case SDL_QUIT:
+                    runningState = 0;
+            }
+        }
         fetch();
         decode_and_execute();
         update_display();

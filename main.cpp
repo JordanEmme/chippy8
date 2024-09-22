@@ -20,7 +20,7 @@ unsigned short sp;
 unsigned char V[16];
 unsigned short opcode;
 
-std::byte display[8 * 32];
+unsigned char display[64 * 32];
 
 unsigned char soundTimer;
 unsigned char delayTimer;
@@ -164,7 +164,7 @@ void decode_and_execute() {
                     break;
                 case 0x6:
                     if (get_opcode_at(y)
-                        & 1) {  // Deviation from standard, because this is hoq most roms behave according to octo
+                        & 1) {  // Deviation from standard, because this is how most roms behave according to octo
                         V[0xF] = 1;
                     }
                     kk = get_opcode_at(y) >> 1;
@@ -201,9 +201,29 @@ void decode_and_execute() {
             n = opcode & 0xF;
             x = (opcode & 0xF00) >> 8;
             y = (opcode & 0xF0) >> 4;
-
-            for (short i = 0; i < n; i++) {
-                unsigned char byte = memory[I + i];
+            {
+                unsigned char pixelOff = 0;
+                unsigned short displayRowStart = y * 64;
+                for (short i = 0; i < n; i++) {
+                    unsigned char byte = memory[I + i];
+                    for (short bitShift = 0; bitShift < 8; bitShift++) {
+                        unsigned short displayCoord = displayRowStart;
+                        if (x + 8 * i + bitShift >= 64) {
+                            displayCoord += x + 8 * i + bitShift - 64;
+                        } else {
+                            displayCoord += x + 8 * i + bitShift;
+                        }
+                        if ((byte & (1 << bitShift)
+                             && display[displayRowStart + x + 8 * i + bitShift])) {
+                            display[displayRowStart + x + 8 * i + bitShift] = 0;
+                            pixelOff = 1;
+                        } else if (byte & (1 << bitShift)
+                                   || display[displayRowStart + x + 8 * i + bitShift]) {
+                            display[displayRowStart + x + 8 * i + bitShift] = 1;
+                        }
+                    }
+                }
+                V[0xF] = pixelOff;
             }
             break;
         case 0xE000:

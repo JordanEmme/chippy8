@@ -239,12 +239,45 @@ void decode_and_execute() {
             }
             break;
         case 0xE000:
-            if (opcode & 0x9E) {
-                x = (opcode & 0xF00) >> 8;
-                if (keyboardStates[keyboardMap[V[x]]]) {}
+            x = (opcode & 0xF00) >> 8;
+            if (opcode & 0x9E && keyboardStates[keyboardMap[V[x]]]) {
+                pc += 2;
+            } else if (opcode & 0xA1 && !keyboardStates[keyboardMap[V[x]]]) {
+                pc += 2;
             }
             break;
         case 0xF000:
+            x = (opcode & 0xF00) >> 8;
+            switch (opcode & 0xFF) {
+                case 0x07:
+                    V[x] = delayTimer;
+                    break;
+                case 0x0A: {
+                    SDL_Event event;
+                    while (SDL_WaitEvent(&event)) {
+                        if (event.type == SDL_KEYDOWN) {
+                            V[x] = keyboardMap[event.key.keysym.scancode];
+                        }
+                    }
+                } break;
+                case 0x15:
+                    delayTimer = V[x];
+                    break;
+                case 0x18:
+                    soundTimer = V[x];
+                    break;
+                case 0x1E:
+                    I += V[x];
+                    break;
+                case 0x29:
+                    break;
+                case 0x33:
+                    break;
+                case 0x55:
+                    break;
+                case 0x65:
+                    break;
+            }
             break;
     }
 }

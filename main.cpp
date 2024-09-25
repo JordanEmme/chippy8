@@ -226,12 +226,8 @@ void decode_and_execute() {
                 for (short i = 0; i < n; i++) {
                     unsigned char byte = memory[I + i];
                     for (short bitShift = 0; bitShift < 8; bitShift++) {
-                        unsigned short displayCoord = displayRowStart;
-                        if (x + 8 * i + bitShift >= 64) {
-                            displayCoord += x + 8 * i + bitShift - 64;
-                        } else {
-                            displayCoord += x + 8 * i + bitShift;
-                        }
+                        unsigned short displayCoord = (x + 8 * i + bitShift) % 64;
+                        displayCoord += displayRowStart;
                         if ((byte & (1 << bitShift) && display[displayCoord])) {
                             display[displayCoord] = 0;
                             V[0xF] = 1;

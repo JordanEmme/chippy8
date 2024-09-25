@@ -7,8 +7,12 @@
 #include <SDL2/SDL_stdinc.h>
 #include <SDL2/SDL_video.h>
 
-const short DISPLAY_WIDTH = 640;
-const short DISPLAY_HEIGHT = 320;
+#define PIXEL_SIZE 16
+#define WHITE 255, 255, 255, 255
+#define BLACK 0, 0, 0, 255
+
+const short DISPLAY_WIDTH = 64 * PIXEL_SIZE;
+const short DISPLAY_HEIGHT = 32 * PIXEL_SIZE;
 
 SDL_Window* window;
 SDL_Renderer* renderer;
@@ -249,7 +253,21 @@ void decode_and_execute() {
     }
 }
 
-void update_display() {}
+void update_display() {
+    SDL_SetRenderDrawColor(renderer, BLACK);
+    SDL_RenderClear(renderer);
+    short displayArrayOffset = 0;
+    for (int y = 0; y < DISPLAY_HEIGHT; y += PIXEL_SIZE) {
+        for (int x = 0; x < DISPLAY_WIDTH; x += PIXEL_SIZE) {
+            if (display[displayArrayOffset++]) {
+                SDL_Rect rectangle {x, y, PIXEL_SIZE, PIXEL_SIZE};
+                SDL_SetRenderDrawColor(renderer, WHITE);
+                SDL_RenderFillRect(renderer, &rectangle);
+            }
+        }
+    }
+    SDL_RenderPresent(renderer);
+}
 
 int main() {
     load_font_in_memory();

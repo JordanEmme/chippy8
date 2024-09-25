@@ -270,12 +270,24 @@ void decode_and_execute() {
                     I += V[x];
                     break;
                 case 0x29:
+                    I = 5 * V[x];
                     break;
-                case 0x33:
-                    break;
+                case 0x33: {
+                    short vx = V[x];
+                    for (short i = 0; i < 3; i++) {
+                        memory[I + 2 - i] = vx % 10;
+                        vx /= 10;
+                    }
+                } break;
                 case 0x55:
+                    for (short i = 0; i <= x; i++) {
+                        memory[I + i] = V[i];
+                    }
                     break;
                 case 0x65:
+                    for (short i = 0; i <= x; i++) {
+                        V[i] = memory[I + i];
+                    }
                     break;
             }
             break;

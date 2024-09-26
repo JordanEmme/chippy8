@@ -23,7 +23,7 @@ unsigned char memory[4096];
 unsigned short pc;
 unsigned short I;
 
-unsigned short stack[30];
+unsigned short stack[16];
 unsigned short sp;
 
 unsigned char V[16];
@@ -96,15 +96,6 @@ void fetch() {
 }
 
 void decode_and_execute() {
-    if (opcode == 0x00E0) {
-        // clear display
-        return;
-    }
-    if (opcode == 0x00EE) {
-        // return from subroutine
-        return;
-    }
-
     unsigned char x = 0;
     unsigned char y = 0;
     unsigned char kk = 0;
@@ -113,13 +104,22 @@ void decode_and_execute() {
 
     switch (opcode & 0xF000) {
         case 0x0000:
-            // jump to machine code routine at opcode & 0x0FFF
+            if (opcode == 0x00E0) {
+                // clear display
+                SDL_SetRenderDrawColor(renderer, BLACK);
+                SDL_RenderClear(renderer);
+            } else if (opcode == 0x00EE) {
+                // return from subroutine
+                pc = stack[sp--];
+            }
             break;
         case 0x1000:
             pc = opcode & 0x0FFF;
             break;
         case 0x2000:
             // call subroutine at opcode & 0x0FFF
+            stack[++sp] = pc;
+            pc = opcode & 0x0FFF;
             break;
         case 0x3000:
             x = (opcode & 0x0F00) >> 8;

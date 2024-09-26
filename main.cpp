@@ -106,8 +106,9 @@ void decode_and_execute() {
         case 0x0000:
             if (opcode == 0x00E0) {
                 // clear display
-                SDL_SetRenderDrawColor(renderer, BLACK);
-                SDL_RenderClear(renderer);
+                for (short i = 0; i < 64 * 32; i++) {
+                    display[i] = 0;
+                }
             } else if (opcode == 0x00EE) {
                 // return from subroutine
                 pc = stack[sp--];

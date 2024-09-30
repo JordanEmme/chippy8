@@ -96,11 +96,12 @@ void fetch() {
 }
 
 void decode_and_execute() {
-    unsigned char x = 0;
-    unsigned char y = 0;
-    unsigned char kk = 0;
+    unsigned char x = (opcode & 0x0F00) >> 8;
+    unsigned char y = (opcode & 0x00F0) >> 4;
 
-    unsigned short n = 0;
+    unsigned char n = opcode & 0x000F;
+    unsigned char kk = opcode & 0x00FF;
+    unsigned short nnn = opcode & 0x0FFF;
 
     switch (opcode & 0xF000) {
         case 0x0000:
@@ -115,47 +116,36 @@ void decode_and_execute() {
             }
             break;
         case 0x1000:
-            pc = opcode & 0x0FFF;
+            pc = nnn;
             break;
         case 0x2000:
             // call subroutine at opcode & 0x0FFF
             stack[++sp] = pc;
-            pc = opcode & 0x0FFF;
+            pc = nnn;
             break;
         case 0x3000:
-            x = (opcode & 0x0F00) >> 8;
-            kk = opcode & 0x00FF;
             if (V[x] == kk) {
                 pc += 2;
             }
             break;
         case 0x4000:
-            x = (opcode & 0x0F00) >> 8;
-            kk = opcode & 0x00FF;
             if (V[x] != kk) {
                 pc += 2;
             }
             break;
         case 0x5000:
-            x = opcode & 0x0F00;
-            y = opcode & 0x00F0;
             if (V[x] == V[y]) {
                 pc += 2;
             }
             break;
         case 0x6000:
-            x = (opcode & 0x0F00) >> 8;
-            V[x] = opcode & 0x00FF;
+            V[x] = kk;
             break;
         case 0x7000:
-            x = opcode & 0x0F00 >> 8;
-            kk = opcode & 0x00FF;
             V[x] += kk;
             break;
         case 0x8000:
-            x = (opcode & 0x0F00) >> 8;
-            y = (opcode & 0x00F0) >> 4;
-            switch (opcode & 0x000F) {
+            switch (n) {
                 case 0x0:
                     V[x] = V[y];
                     break;
@@ -209,38 +199,32 @@ void decode_and_execute() {
             }
             break;
         case 0xA000:
-            I = opcode & 0xFFF;
+            I = nnn;
             break;
         case 0xB000:
-            pc = (opcode & 0xFFF) + V[0];
+            pc = nnn + V[0];
             break;
         case 0xC000:
-            V[x] = (opcode & 0xFF) & rand();
+            V[x] = kk & rand();
             break;
-        case 0xD000:
-            n = opcode & 0xF;
-            x = (opcode & 0xF00) >> 8;
-            y = (opcode & 0xF0) >> 4;
-            {
-                V[0xF] = 0;
-                unsigned short displayRowStart = y * 64;
-                for (short i = 0; i < n; i++) {
-                    unsigned char byte = memory[I + i];
-                    for (short bitShift = 0; bitShift < 8; bitShift++) {
-                        unsigned short displayCoord = (x + 8 * i + bitShift) % 64;
-                        displayCoord += displayRowStart;
-                        if ((byte & (1 << bitShift) && display[displayCoord])) {
-                            display[displayCoord] = 0;
-                            V[0xF] = 1;
-                        } else if (byte & (1 << bitShift) || display[displayCoord]) {
-                            display[displayRowStart + x + 8 * i + bitShift] = 1;
-                        }
+        case 0xD000: {
+            V[0xF] = 0;
+            unsigned short displayRowStart = y * 64;
+            for (short i = 0; i < n; i++) {
+                unsigned char byte = memory[I + i];
+                for (short bitShift = 0; bitShift < 8; bitShift++) {
+                    unsigned short displayCoord = (x + 8 * i + bitShift) % 64;
+                    displayCoord += displayRowStart;
+                    if ((byte & (1 << bitShift) && display[displayCoord])) {
+                        display[displayCoord] = 0;
+                        V[0xF] = 1;
+                    } else if (byte & (1 << bitShift) || display[displayCoord]) {
+                        display[displayRowStart + x + 8 * i + bitShift] = 1;
                     }
                 }
             }
-            break;
+        } break;
         case 0xE000:
-            x = (opcode & 0xF00) >> 8;
             if (opcode & 0x9E && keyboardStates[keyboardMap[V[x]]]) {
                 pc += 2;
             } else if (opcode & 0xA1 && !keyboardStates[keyboardMap[V[x]]]) {
@@ -248,8 +232,7 @@ void decode_and_execute() {
             }
             break;
         case 0xF000:
-            x = (opcode & 0xF00) >> 8;
-            switch (opcode & 0xFF) {
+            switch (kk) {
                 case 0x07:
                     V[x] = delayTimer;
                     break;

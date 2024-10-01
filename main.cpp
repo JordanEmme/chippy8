@@ -5,6 +5,7 @@
 #include <SDL2/SDL_scancode.h>
 #include <SDL2/SDL_stdinc.h>
 #include <SDL2/SDL_video.h>
+#include <fstream>
 
 #define PIXEL_SIZE 16
 #define WHITE 255, 255, 255, 255
@@ -12,6 +13,8 @@
 
 const short DISPLAY_WIDTH = 64 * PIXEL_SIZE;
 const short DISPLAY_HEIGHT = 32 * PIXEL_SIZE;
+const char* ROM_PATH = "/home/jordan/Development/emulator101/IBM_Logo.ch8";
+const unsigned int ROM_START_ADDRESS = 0x200;
 
 SDL_Window* window;
 SDL_Renderer* renderer;
@@ -75,6 +78,25 @@ const unsigned char keyboardMap[16] {
 
 void load_font_in_memory() {
     memcpy(memory, font, 80 * sizeof(unsigned char));
+}
+
+void load_rom() {
+    std::ifstream file(ROM_PATH, std::ios::binary | std::ios::ate);
+
+    if (file.is_open()) {
+        std::streampos size = file.tellg();
+        char* buffer = new char[size];
+
+        file.seekg(0, std::ios::beg);
+        file.read(buffer, size);
+        file.close();
+
+        memcpy(memory + ROM_START_ADDRESS, buffer, size);
+
+        delete[] buffer;
+
+        pc = ROM_START_ADDRESS;
+    }
 }
 
 void initialise_display() {
@@ -301,6 +323,7 @@ void update_timers() {
 
 int main() {
     load_font_in_memory();
+    load_rom();
     initialise_display();
     keyboardStates = SDL_GetKeyboardState(NULL);
     SDL_Event event;

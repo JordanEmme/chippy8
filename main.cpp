@@ -167,14 +167,8 @@ void decode_and_execute() {
                     V[x] += V[y];
                     break;
                 case 0x5:
-                    // Deviation from cowgod's spec, in line with VF = NOT borrow
-                    if (V[x] >= V[y]) {
-                        V[x] = V[x] - V[y];
-                        V[0xF] = 0;
-                    } else {
-                        V[x] = V[y] - V[x];
-                        V[0xF] = 1;
-                    }
+                    V[0xF] = V[x] >= V[y];
+                    V[x] -= V[y];
                     break;
                 case 0x6:
                     // Deviation from standard, because this is how most roms behave according to octo
@@ -184,6 +178,8 @@ void decode_and_execute() {
                     V[x] = V[y] >> 1;
                     break;
                 case 0x7:
+                    V[0xF] = V[y] >= V[x];
+                    V[x] = V[y] - V[x];
                     break;
                 case 0xE:
                     if ((V[y] & 0x80) >> 7) {

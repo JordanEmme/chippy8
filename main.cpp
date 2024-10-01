@@ -1,7 +1,6 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_events.h>
 #include <SDL2/SDL_keyboard.h>
-#include <SDL2/SDL_keycode.h>
 #include <SDL2/SDL_render.h>
 #include <SDL2/SDL_scancode.h>
 #include <SDL2/SDL_stdinc.h>
@@ -31,7 +30,7 @@ unsigned short opcode;
 
 unsigned char display[64 * 32];
 
-unsigned char soundTimer;
+unsigned char soundTimer = 60;
 unsigned char delayTimer;
 
 const Uint8* keyboardStates;
@@ -290,6 +289,16 @@ void update_display() {
     SDL_RenderPresent(renderer);
 }
 
+void update_timers() {
+    if (delayTimer) {
+        delayTimer--;
+    }
+    if (soundTimer) {
+        //TODO: Play buzzer
+        soundTimer--;
+    }
+}
+
 int main() {
     load_font_in_memory();
     initialise_display();
@@ -304,6 +313,7 @@ int main() {
         }
         fetch();
         decode_and_execute();
+        update_timers();
         update_display();
     }
 

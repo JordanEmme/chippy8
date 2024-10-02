@@ -4,6 +4,7 @@
 #include <SDL2/SDL_render.h>
 #include <SDL2/SDL_scancode.h>
 #include <SDL2/SDL_stdinc.h>
+#include <SDL2/SDL_timer.h>
 #include <SDL2/SDL_video.h>
 #include <fstream>
 
@@ -226,18 +227,18 @@ void decode_and_execute() {
             break;
         case 0xD000: {
             V[0xF] = 0;
-            unsigned short displayRowStart = V[y] * 64;
-            for (short i = 0; i <= n; i++) {
+            unsigned short spriteTopLeft = V[y] * 64 + V[x];
+            for (short i = 0; i < n; i++) {
+                unsigned short pixelCoord = spriteTopLeft + i * 64;
                 unsigned char byte = memory[I + i];
                 for (short bitShift = 0; bitShift < 8; bitShift++) {
-                    unsigned short displayCoord = (V[x] + 8 * i + bitShift) % 64;
-                    displayCoord += displayRowStart;
-                    if ((byte & (1 << bitShift) && display[displayCoord])) {
-                        display[displayCoord] = 0;
+                    if ((byte & (1 << bitShift) && display[pixelCoord])) {
+                        display[pixelCoord] = 0;
                         V[0xF] = 1;
-                    } else if (byte & (1 << bitShift) || display[displayCoord]) {
-                        display[displayCoord] = 1;
+                    } else if (byte & (1 << bitShift) || display[pixelCoord]) {
+                        display[pixelCoord] = 1;
                     }
+                    pixelCoord++;
                 }
             }
         } break;

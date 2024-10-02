@@ -226,17 +226,17 @@ void decode_and_execute() {
             break;
         case 0xD000: {
             V[0xF] = 0;
-            unsigned short displayRowStart = y * 64;
+            unsigned short displayRowStart = V[y] * 64;
             for (short i = 0; i < n; i++) {
                 unsigned char byte = memory[I + i];
                 for (short bitShift = 0; bitShift < 8; bitShift++) {
-                    unsigned short displayCoord = (x + 8 * i + bitShift) % 64;
+                    unsigned short displayCoord = (V[x] + 8 * i + bitShift) % 64;
                     displayCoord += displayRowStart;
                     if ((byte & (1 << bitShift) && display[displayCoord])) {
                         display[displayCoord] = 0;
                         V[0xF] = 1;
                     } else if (byte & (1 << bitShift) || display[displayCoord]) {
-                        display[displayRowStart + x + 8 * i + bitShift] = 1;
+                        display[displayCoord] = 1;
                     }
                 }
             }

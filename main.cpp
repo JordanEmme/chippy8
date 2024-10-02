@@ -335,11 +335,13 @@ int main() {
                     runningState = 0;
             }
         }
-        fetch();
-        decode_and_execute();
+        // Hacky way to have a 720MHz proc, assuming the display is 60Hz
+        for (int i = 0; i < 12; i++) {
+            fetch();
+            decode_and_execute();
+        }
         update_timers();
         update_display();
     }
-
     return 0;
 }

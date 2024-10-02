@@ -14,7 +14,7 @@
 
 const short DISPLAY_WIDTH = 64 * PIXEL_SIZE;
 const short DISPLAY_HEIGHT = 32 * PIXEL_SIZE;
-const char* ROM_PATH = "/home/jordan/Development/emulator101/IBM_Logo.ch8";
+const char* ROM_PATH = "/home/jordan/Development/emulator101/roms/flags.ch8";
 const unsigned int ROM_START_ADDRESS = 0x200;
 
 SDL_Window* window;

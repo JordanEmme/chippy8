@@ -105,14 +105,14 @@ void initialise_display() {
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_PRESENTVSYNC);
 }
 
-unsigned short get_opcode_at(unsigned char x) {
-    unsigned char opcode1 = V[x];
-    unsigned char opcode2 = V[x + 1];
+unsigned short get_opcode_at_pc() {
+    unsigned char opcode1 = memory[pc];
+    unsigned char opcode2 = memory[pc + 1];
     return (opcode1 << 8) | opcode2;
 }
 
 void fetch() {
-    opcode = get_opcode_at(pc);
+    opcode = get_opcode_at_pc();
     pc += 2;
 }
 

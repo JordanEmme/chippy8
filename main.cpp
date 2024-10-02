@@ -227,7 +227,7 @@ void decode_and_execute() {
         case 0xD000: {
             V[0xF] = 0;
             unsigned short displayRowStart = V[y] * 64;
-            for (short i = 0; i < n; i++) {
+            for (short i = 0; i <= n; i++) {
                 unsigned char byte = memory[I + i];
                 for (short bitShift = 0; bitShift < 8; bitShift++) {
                     unsigned short displayCoord = (V[x] + 8 * i + bitShift) % 64;

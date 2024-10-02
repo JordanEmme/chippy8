@@ -231,7 +231,7 @@ void decode_and_execute() {
             for (short i = 0; i < n; i++) {
                 unsigned short pixelCoord = spriteTopLeft + i * 64;
                 unsigned char byte = memory[I + i];
-                for (short bitShift = 0; bitShift < 8; bitShift++) {
+                for (short bitShift = 7; bitShift >= 0; bitShift--) {
                     if ((byte & (1 << bitShift) && display[pixelCoord])) {
                         display[pixelCoord] = 0;
                         V[0xF] = 1;

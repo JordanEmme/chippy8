@@ -14,7 +14,7 @@
 
 const short DISPLAY_WIDTH = 64 * PIXEL_SIZE;
 const short DISPLAY_HEIGHT = 32 * PIXEL_SIZE;
-const char* ROM_PATH = "/home/jordan/Development/emulator101/roms/flags.ch8";
+const char* ROM_PATH = "/home/jordan/Development/emulator101/roms/pong.ch8";
 const unsigned int ROM_START_ADDRESS = 0x200;
 
 SDL_Window* window;
@@ -76,6 +76,45 @@ const unsigned char keyboardMap[16] {
     SDL_SCANCODE_F,
     SDL_SCANCODE_V
 };
+
+unsigned char scancode_to_reg_value(SDL_Scancode scancode) {
+    switch (scancode) {
+        case SDL_SCANCODE_X:
+            return 0;
+        case SDL_SCANCODE_1:
+            return 1;
+        case SDL_SCANCODE_2:
+            return 2;
+        case SDL_SCANCODE_3:
+            return 3;
+        case SDL_SCANCODE_Q:
+            return 4;
+        case SDL_SCANCODE_W:
+            return 5;
+        case SDL_SCANCODE_E:
+            return 6;
+        case SDL_SCANCODE_A:
+            return 7;
+        case SDL_SCANCODE_S:
+            return 8;
+        case SDL_SCANCODE_D:
+            return 9;
+        case SDL_SCANCODE_Z:
+            return 10;
+        case SDL_SCANCODE_C:
+            return 11;
+        case SDL_SCANCODE_4:
+            return 12;
+        case SDL_SCANCODE_R:
+            return 13;
+        case SDL_SCANCODE_F:
+            return 14;
+        case SDL_SCANCODE_V:
+            return 15;
+        default:
+            return -1;
+    }
+}
 
 void load_font_in_memory() {
     memcpy(memory, font, 80 * sizeof(unsigned char));
@@ -258,7 +297,7 @@ void decode_and_execute() {
                     SDL_Event event;
                     while (SDL_WaitEvent(&event)) {
                         if (event.type == SDL_KEYDOWN) {
-                            V[x] = keyboardMap[event.key.keysym.scancode];
+                            V[x] = scancode_to_reg_value(event.key.keysym.scancode);
                         }
                     }
                 } break;
@@ -329,14 +368,15 @@ int main() {
     keyboardStates = SDL_GetKeyboardState(NULL);
     SDL_Event event;
     while (runningState) {
-        while (SDL_PollEvent(&event)) {
-            switch (event.type) {
-                case SDL_QUIT:
-                    runningState = 0;
-            }
-        }
         // Hacky way to have a 720MHz proc, assuming the display is 60Hz
         for (int i = 0; i < 12; i++) {
+            // This is so the keyboard states are updated before every fetch and decode cycle
+            while (SDL_PollEvent(&event)) {
+                switch (event.type) {
+                    case SDL_QUIT:
+                        runningState = 0;
+                }
+            }
             fetch();
             decode_and_execute();
         }

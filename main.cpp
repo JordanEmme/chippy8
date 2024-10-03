@@ -252,8 +252,8 @@ void decode_and_execute() {
                     V[0xF] = vf;
                     break;
                 case 0xE:
-                    vf = (V[y] & 0x80) >> 7;
-                    V[x] = V[y] << 1;
+                    vf = (V[x] & 0x80) >> 7;
+                    V[x] = V[x] << 1;
                     V[0xF] = vf;
                     break;
             }

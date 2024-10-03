@@ -6,6 +6,7 @@
 #include <SDL2/SDL_stdinc.h>
 #include <SDL2/SDL_timer.h>
 #include <SDL2/SDL_video.h>
+#include <cstring>
 #include <fstream>
 
 #define PIXEL_SIZE 16
@@ -14,7 +15,7 @@
 
 const short DISPLAY_WIDTH = 64 * PIXEL_SIZE;
 const short DISPLAY_HEIGHT = 32 * PIXEL_SIZE;
-const char* ROM_PATH = "/home/jordan/Development/emulator101/roms/pong.ch8";
+const char* ROM_DIRECTORY = "/home/jordan/Development/emulator101/roms/";
 const unsigned int ROM_START_ADDRESS = 0x200;
 
 SDL_Window* window;
@@ -120,8 +121,12 @@ void load_font_in_memory() {
     memcpy(memory, font, 80 * sizeof(unsigned char));
 }
 
-void load_rom() {
-    std::ifstream file(ROM_PATH, std::ios::binary | std::ios::ate);
+void load_rom(char** argv) {
+    char* romName = *(argv + 1);
+    char* romPath = (char*)malloc(strlen(ROM_DIRECTORY) + strlen(romName) + 1);
+    strcpy(romPath, ROM_DIRECTORY);
+    strcat(romPath, romName);
+    std::ifstream file(romPath, std::ios::binary | std::ios::ate);
 
     if (file.is_open()) {
         std::streampos size = file.tellg();
@@ -361,9 +366,9 @@ void update_timers() {
     }
 }
 
-int main() {
+int main(int _, char** argv) {
     load_font_in_memory();
-    load_rom();
+    load_rom(argv);
     initialise_display();
     keyboardStates = SDL_GetKeyboardState(NULL);
     SDL_Event event;

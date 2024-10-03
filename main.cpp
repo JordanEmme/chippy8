@@ -169,6 +169,8 @@ void decode_and_execute() {
     unsigned char kk = opcode & 0x00FF;
     unsigned short nnn = opcode & 0x0FFF;
 
+    unsigned char vf;
+
     switch (opcode & 0xF000) {
         case 0x0000:
             if (opcode == 0x00E0) {
@@ -226,32 +228,33 @@ void decode_and_execute() {
                     break;
                 case 0x4:
                     if (V[y] > 255 - V[x]) {
-                        V[0xF] = 1;
+                        vf = 1;
+
                     } else {
-                        V[0xF] = 0;
+                        vf = 0;
                     }
                     V[x] += V[y];
+                    V[0xF] = vf;
                     break;
                 case 0x5:
-                    V[0xF] = V[x] >= V[y];
+                    vf = V[x] >= V[y];
                     V[x] -= V[y];
+                    V[0xF] = vf;
                     break;
                 case 0x6:
-                    // Deviation from standard, because this is how most roms behave according to octo
-                    if (V[y] & 1) {
-                        V[0xF] = 1;
-                    }
+                    vf = (V[y] & 1);
                     V[x] = V[y] >> 1;
+                    V[0xF] = vf;
                     break;
                 case 0x7:
-                    V[0xF] = V[y] >= V[x];
+                    vf = V[y] >= V[x];
                     V[x] = V[y] - V[x];
+                    V[0xF] = vf;
                     break;
                 case 0xE:
-                    if ((V[y] & 0x80) >> 7) {
-                        V[0xF] = 1;
-                    }
+                    vf = (V[y] & 0x80) >> 7;
                     V[x] = V[y] << 1;
+                    V[0xF] = vf;
                     break;
             }
             break;

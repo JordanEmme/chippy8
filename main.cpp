@@ -20,23 +20,23 @@ const unsigned int ROM_START_ADDRESS = 0x200;
 
 SDL_Window* window;
 SDL_Renderer* renderer;
-unsigned char runningState = 1;
+bool runningState = true;
 
-unsigned char memory[4096];
+uint8_t memory[4096];
 
-unsigned short pc;
-unsigned short I;
+uint16_t pc;
+uint16_t I;
 
-unsigned short stack[16];
-unsigned short sp;
+uint16_t stack[16];
+uint16_t sp;
 
-unsigned char V[16];
-unsigned short opcode;
+uint8_t V[16];
+uint16_t opcode;
 
-unsigned char display[64 * 32];
+bool display[64 * 32];
 
-unsigned char soundTimer = 60;
-unsigned char delayTimer;
+uint8_t soundTimer = 60;
+uint8_t delayTimer;
 
 const Uint8* keyboardStates;
 
@@ -176,7 +176,7 @@ void decode_and_execute() {
             if (opcode == 0x00E0) {
                 // clear display
                 for (short i = 0; i < 64 * 32; i++) {
-                    display[i] = 0;
+                    display[i] = false;
                 }
             } else if (opcode == 0x00EE) {
                 // return from subroutine
@@ -280,10 +280,10 @@ void decode_and_execute() {
                 unsigned char byte = memory[I + i];
                 for (short bitShift = 7; bitShift >= 0; bitShift--) {
                     if ((byte & (1 << bitShift) && display[pixelCoord])) {
-                        display[pixelCoord] = 0;
+                        display[pixelCoord] = false;
                         V[0xF] = 1;
                     } else if (byte & (1 << bitShift) || display[pixelCoord]) {
-                        display[pixelCoord] = 1;
+                        display[pixelCoord] = true;
                     }
                     pixelCoord++;
                 }
@@ -386,7 +386,7 @@ int main(int argc, char** argv) {
             while (SDL_PollEvent(&event)) {
                 switch (event.type) {
                     case SDL_QUIT:
-                        runningState = 0;
+                        runningState = false;
                 }
             }
             fetch();

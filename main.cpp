@@ -130,7 +130,7 @@ void load_rom(char* romRelativePath) {
 
     if (file.is_open()) {
         std::streampos size = file.tellg();
-        char* buffer = new char[size];
+        char* buffer = (char*)malloc(size * sizeof(char));
 
         file.seekg(0, std::ios::beg);
         file.read(buffer, size);
@@ -138,7 +138,7 @@ void load_rom(char* romRelativePath) {
 
         memcpy(memory + ROM_START_ADDRESS, buffer, size);
 
-        delete[] buffer;
+        free(buffer);
 
         pc = ROM_START_ADDRESS;
     }

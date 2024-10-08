@@ -7,6 +7,7 @@
 #include "SDL2/SDL_scancode.h"
 #include "SDL2/SDL_stdinc.h"
 #include "SDL2/SDL_video.h"
+#include <cstdint>
 #include <cstring>
 #include <fstream>
 
@@ -290,9 +291,9 @@ void decode_and_execute() {
             }
         } break;
         case 0xE000:
-            if (opcode & 0x9E && keyboardStates[keyboardMap[V[x]]]) {
+            if ((kk == 0x9E) && keyboardStates[keyboardMap[V[x]]]) {
                 pc += 2;
-            } else if (opcode & 0xA1 && !keyboardStates[keyboardMap[V[x]]]) {
+            } else if ((kk & 0xA1) && !keyboardStates[keyboardMap[V[x]]]) {
                 pc += 2;
             }
             break;

@@ -60,7 +60,7 @@ const unsigned char font[80] {
     0xF0, 0x80, 0xF0, 0x80, 0x80  // F
 };
 
-const unsigned char keyboardMap[16] {
+const SDL_Scancode keyboardMap[16] {
     SDL_SCANCODE_X,
     SDL_SCANCODE_1,
     SDL_SCANCODE_2,
@@ -79,7 +79,7 @@ const unsigned char keyboardMap[16] {
     SDL_SCANCODE_V
 };
 
-unsigned char scancode_to_reg_value(SDL_Scancode scancode) {
+int8_t scancode_to_reg_value(SDL_Scancode scancode) {
     switch (scancode) {
         case SDL_SCANCODE_X:
             return 0;
@@ -147,7 +147,7 @@ void load_rom(char* romRelativePath) {
 
 void initialise_display() {
     SDL_Init(SDL_INIT_VIDEO);
-    window = SDL_CreateWindow("CHIP-8", 0, 0, DISPLAY_WIDTH, DISPLAY_HEIGHT, 0);
+    window = SDL_CreateWindow("Chippy8", 0, 0, DISPLAY_WIDTH, DISPLAY_HEIGHT, 0);
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_PRESENTVSYNC);
 }
 
@@ -304,12 +304,19 @@ void decode_and_execute() {
                     break;
                 case 0x0A: {
                     SDL_Event event;
-                    while (SDL_WaitEvent(&event)) {
+                    int8_t regValue;
+                    bool validEvent = false;
+                    while (!validEvent) {
+                        SDL_WaitEvent(&event);
                         if (event.type == SDL_KEYDOWN) {
-                            V[x] = scancode_to_reg_value(event.key.keysym.scancode);
+                            regValue = scancode_to_reg_value(event.key.keysym.scancode);
+                            if (regValue != -1) {
+                                V[x] = regValue;
+                                validEvent = true;
+                            }
                         }
                     }
-                } break;
+                }
                 case 0x15:
                     delayTimer = V[x];
                     break;

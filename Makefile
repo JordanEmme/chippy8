@@ -1,8 +1,11 @@
-CC=g++
-CFLAGS= -Wall -Werror -lSDL2
+CXX=g++
+SDL2CFLAGS= $(sdl2-config --cflags)
 
-main:
-	$(CC) main.cpp -o chippy8 $(CFLAGS)
+CXXFLAGS=-O2 -c --std=c++14 -Wall -Werror $(SDL2CFLAGS)
+LDFLAGS= -lSDL2
 
-debug:
-	$(CC) main.cpp -g -o debug.out $(CFLAGS)
+chippy8: main.o
+	eval $(CXX) $(LDFLAGS) -o chippy8 main.o
+
+main.o: main.cpp
+	$(CXX) $(CXXFLAGS) main.cpp

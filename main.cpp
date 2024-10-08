@@ -293,7 +293,7 @@ void decode_and_execute() {
         case 0xE000:
             if ((kk == 0x9E) && keyboardStates[keyboardMap[V[x]]]) {
                 pc += 2;
-            } else if ((kk & 0xA1) && !keyboardStates[keyboardMap[V[x]]]) {
+            } else if ((kk == 0xA1) && !keyboardStates[keyboardMap[V[x]]]) {
                 pc += 2;
             }
             break;

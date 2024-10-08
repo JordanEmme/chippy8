@@ -2,6 +2,7 @@
 #include <SDL2/SDL_events.h>
 #include <SDL2/SDL_filesystem.h>
 #include <SDL2/SDL_keyboard.h>
+#include <SDL2/SDL_log.h>
 #include <SDL2/SDL_render.h>
 #include <SDL2/SDL_scancode.h>
 #include <SDL2/SDL_stdinc.h>
@@ -371,7 +372,10 @@ void update_timers() {
 
 int main(int argc, char** argv) {
     if (argc != 2) {
-        printf("Invalid number of arguments, please specify the rom path");
+        SDL_LogError(
+            SDL_LOG_CATEGORY_ERROR,
+            "Invalid number of arguments, please specify the rom path"
+        );
         return 1;
     }
     load_rom(argv[1]);

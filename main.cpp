@@ -11,13 +11,15 @@
 #include <cstring>
 #include <fstream>
 
-#define PIXEL_SIZE 16
 #define WHITE 255, 255, 255, 255
 #define BLACK 0, 0, 0, 255
 
-const short DISPLAY_WIDTH = 64 * PIXEL_SIZE;
-const short DISPLAY_HEIGHT = 32 * PIXEL_SIZE;
-const unsigned int ROM_START_ADDRESS = 0x200;
+const uint8_t DISPLAY_WIDTH = 64;
+const uint8_t DISPLAY_HEIGHT = 32;
+const uint8_t PIXEL_SIZE = 16;
+const uint16_t WINDOW_WIDTH = DISPLAY_WIDTH * PIXEL_SIZE;
+const uint16_t WINDOW_HEIGHT = DISPLAY_HEIGHT * PIXEL_SIZE;
+const uint16_t ROM_START_ADDRESS = 0x200;
 
 SDL_Window* window;
 SDL_Renderer* renderer;
@@ -34,7 +36,7 @@ uint16_t sp;
 uint8_t V[16];
 uint16_t opcode;
 
-bool display[64 * 32];
+bool display[DISPLAY_WIDTH * DISPLAY_HEIGHT];
 
 uint8_t soundTimer = 60;
 uint8_t delayTimer;
@@ -147,7 +149,7 @@ void load_rom(char* romRelativePath) {
 
 void initialise_display() {
     SDL_Init(SDL_INIT_VIDEO);
-    window = SDL_CreateWindow("Chippy8", 0, 0, DISPLAY_WIDTH, DISPLAY_HEIGHT, 0);
+    window = SDL_CreateWindow("Chippy8", 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, 0);
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_PRESENTVSYNC);
 }
 
@@ -275,8 +277,9 @@ void decode_and_execute() {
             break;
         case 0xD000: {
             V[0xF] = 0;
-            unsigned short spriteTopLeft = V[y] * 64 + V[x];
-            for (short i = 0; i < n; i++) {
+            uint16_t spriteTopLeft = V[y] * 64 + V[x];
+            uint16_t spriteHeight = n > DISPLAY_HEIGHT - V[y] ? DISPLAY_HEIGHT - V[y] : n;
+            for (short i = 0; i < spriteHeight; i++) {
                 unsigned short pixelCoord = spriteTopLeft + i * 64;
                 unsigned char byte = memory[I + i];
                 for (short bitShift = 7; bitShift >= 0; bitShift--) {
@@ -355,8 +358,8 @@ void update_display() {
     SDL_SetRenderDrawColor(renderer, BLACK);
     SDL_RenderClear(renderer);
     short displayArrayOffset = 0;
-    for (int y = 0; y < DISPLAY_HEIGHT; y += PIXEL_SIZE) {
-        for (int x = 0; x < DISPLAY_WIDTH; x += PIXEL_SIZE) {
+    for (int y = 0; y < WINDOW_HEIGHT; y += PIXEL_SIZE) {
+        for (int x = 0; x < WINDOW_WIDTH; x += PIXEL_SIZE) {
             if (display[displayArrayOffset++]) {
                 SDL_Rect rectangle {x, y, PIXEL_SIZE, PIXEL_SIZE};
                 SDL_SetRenderDrawColor(renderer, WHITE);

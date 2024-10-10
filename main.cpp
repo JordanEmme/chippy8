@@ -145,6 +145,7 @@ void load_rom(char* romRelativePath) {
 
         pc = ROM_START_ADDRESS;
     }
+    free(romPath);
 }
 
 void initialise_display() {

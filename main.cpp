@@ -243,8 +243,8 @@ void decode_and_execute() {
                     V[0xF] = vf;
                     break;
                 case 0x6:
-                    vf = (V[y] & 1);
-                    V[x] = V[y] >> 1;
+                    vf = (V[x] & 1);
+                    V[x] = V[x] >> 1;
                     V[0xF] = vf;
                     break;
                 case 0x7:

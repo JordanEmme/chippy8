@@ -178,7 +178,7 @@ void decode_and_execute() {
         case 0x0000:
             if (opcode == 0x00E0) {
                 // clear display
-                for (short i = 0; i < 64 * 32; i++) {
+                for (short i = 0; i < DISPLAY_HEIGHT * DISPLAY_WIDTH; i++) {
                     display[i] = false;
                 }
             } else if (opcode == 0x00EE) {
@@ -277,11 +277,11 @@ void decode_and_execute() {
             break;
         case 0xD000: {
             V[0xF] = 0;
-            uint16_t spriteTopLeft = V[y] * 64 + V[x];
+            uint16_t spriteTopLeft = V[y] * DISPLAY_WIDTH + V[x];
             uint16_t spriteHeight = n > DISPLAY_HEIGHT - V[y] ? DISPLAY_HEIGHT - V[y] : n;
             for (short i = 0; i < spriteHeight; i++) {
-                unsigned short pixelCoord = spriteTopLeft + i * 64;
-                unsigned char byte = memory[I + i];
+                uint16_t pixelCoord = spriteTopLeft + i * DISPLAY_WIDTH;
+                uint8_t byte = memory[I + i];
                 for (short bitShift = 7; bitShift >= 0; bitShift--) {
                     if ((byte & (1 << bitShift) && display[pixelCoord])) {
                         display[pixelCoord] = false;

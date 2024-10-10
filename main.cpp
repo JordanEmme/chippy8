@@ -278,15 +278,17 @@ void decode_and_execute() {
         case 0xD000: {
             V[0xF] = 0;
             uint16_t spriteTopLeft = V[y] * DISPLAY_WIDTH + V[x];
-            uint16_t spriteHeight = n > DISPLAY_HEIGHT - V[y] ? DISPLAY_HEIGHT - V[y] : n;
-            for (short i = 0; i < spriteHeight; i++) {
+            uint8_t spriteHeight = V[y] + n < DISPLAY_HEIGHT ? n : DISPLAY_HEIGHT - V[y];
+            uint8_t spriteWidth = V[x] + 8 < DISPLAY_WIDTH ? 8 : DISPLAY_WIDTH - V[x];
+            for (uint8_t i = 0; i < spriteHeight; i++) {
                 uint16_t pixelCoord = spriteTopLeft + i * DISPLAY_WIDTH;
-                uint8_t byte = memory[I + i];
-                for (short bitShift = 7; bitShift >= 0; bitShift--) {
-                    if ((byte & (1 << bitShift) && display[pixelCoord])) {
+                uint8_t spriteRow = memory[I + i];
+                for (uint8_t bitShift = 0; bitShift < spriteWidth; bitShift++) {
+                    bool pixelState = (spriteRow >> (7 - bitShift)) & 1;
+                    if ((pixelState && display[pixelCoord])) {
                         display[pixelCoord] = false;
                         V[0xF] = 1;
-                    } else if (byte & (1 << bitShift) || display[pixelCoord]) {
+                    } else if (pixelState || display[pixelCoord]) {
                         display[pixelCoord] = true;
                     }
                     pixelCoord++;

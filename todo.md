@@ -1,6 +1,6 @@
 - [x] Fix input
 - [x] Fix wrong VF flag value on tests
-- [ ] Implement Display wraparound: horizontal
+- [x] Implement Display wraparound: horizontal
 - [x] Implement Display wraparound: vertical
 - [ ] Implement clock speed controls
 - [x] Make it so that rom path is passed as an argument rather than hardcoded

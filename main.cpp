@@ -43,7 +43,7 @@ uint8_t delayTimer;
 
 const Uint8* keyboardStates;
 
-const unsigned char font[80] {
+const uint8_t font[80] {
     0xF0, 0x90, 0x90, 0x90, 0xF0,  // 0
     0x20, 0x60, 0x20, 0x20, 0x70,  // 1
     0xF0, 0x10, 0xF0, 0x80, 0xF0,  // 2
@@ -133,7 +133,7 @@ void load_rom(char* romRelativePath) {
 
     if (file.is_open()) {
         std::streampos size = file.tellg();
-        char* buffer = (char*)malloc(size * sizeof(char));
+        char* buffer = new char[size];
 
         file.seekg(0, std::ios::beg);
         file.read(buffer, size);
@@ -141,7 +141,7 @@ void load_rom(char* romRelativePath) {
 
         memcpy(memory + ROM_START_ADDRESS, buffer, size);
 
-        free(buffer);
+        delete[] buffer;
 
         pc = ROM_START_ADDRESS;
     }
@@ -153,9 +153,9 @@ void initialise_display() {
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_PRESENTVSYNC);
 }
 
-unsigned short get_opcode_at_pc() {
-    unsigned char opcode1 = memory[pc];
-    unsigned char opcode2 = memory[pc + 1];
+uint16_t get_opcode_at_pc() {
+    uint8_t opcode1 = memory[pc];
+    uint8_t opcode2 = memory[pc + 1];
     return (opcode1 << 8) | opcode2;
 }
 
@@ -165,20 +165,20 @@ void fetch() {
 }
 
 void decode_and_execute() {
-    unsigned char x = (opcode & 0x0F00) >> 8;
-    unsigned char y = (opcode & 0x00F0) >> 4;
+    uint8_t x = (opcode & 0x0F00) >> 8;
+    uint8_t y = (opcode & 0x00F0) >> 4;
 
-    unsigned char n = opcode & 0x000F;
-    unsigned char kk = opcode & 0x00FF;
-    unsigned short nnn = opcode & 0x0FFF;
+    uint8_t n = opcode & 0x000F;
+    uint8_t kk = opcode & 0x00FF;
+    uint16_t nnn = opcode & 0x0FFF;
 
-    unsigned char vf;
+    uint8_t vf;
 
     switch (opcode & 0xF000) {
         case 0x0000:
             if (opcode == 0x00E0) {
                 // clear display
-                for (short i = 0; i < DISPLAY_HEIGHT * DISPLAY_WIDTH; i++) {
+                for (uint16_t i = 0; i < DISPLAY_HEIGHT * DISPLAY_WIDTH; i++) {
                     display[i] = false;
                 }
             } else if (opcode == 0x00EE) {
@@ -335,19 +335,19 @@ void decode_and_execute() {
                     I = 5 * V[x];
                     break;
                 case 0x33: {
-                    short vx = V[x];
+                    uint8_t vx = V[x];
                     for (short i = 0; i < 3; i++) {
                         memory[I + 2 - i] = vx % 10;
                         vx /= 10;
                     }
                 } break;
                 case 0x55:
-                    for (short i = 0; i <= x; i++) {
+                    for (uint8_t i = 0; i <= x; i++) {
                         memory[I + i] = V[i];
                     }
                     break;
                 case 0x65:
-                    for (short i = 0; i <= x; i++) {
+                    for (uint8_t i = 0; i <= x; i++) {
                         V[i] = memory[I + i];
                     }
                     break;
@@ -360,8 +360,8 @@ void update_display() {
     SDL_SetRenderDrawColor(renderer, BLACK);
     SDL_RenderClear(renderer);
     short displayArrayOffset = 0;
-    for (int y = 0; y < WINDOW_HEIGHT; y += PIXEL_SIZE) {
-        for (int x = 0; x < WINDOW_WIDTH; x += PIXEL_SIZE) {
+    for (uint16_t y = 0; y < WINDOW_HEIGHT; y += PIXEL_SIZE) {
+        for (uint16_t x = 0; x < WINDOW_WIDTH; x += PIXEL_SIZE) {
             if (display[displayArrayOffset++]) {
                 SDL_Rect rectangle {x, y, PIXEL_SIZE, PIXEL_SIZE};
                 SDL_SetRenderDrawColor(renderer, WHITE);
@@ -397,7 +397,7 @@ int main(int argc, char** argv) {
     SDL_Event event;
     while (runningState) {
         // Hacky way to have a 720MHz proc, assuming the display is 60Hz
-        for (int i = 0; i < 12; i++) {
+        for (uint8_t i = 0; i < 12; i++) {
             // This is so the keyboard states are updated before every fetch and decode cycle
             while (SDL_PollEvent(&event)) {
                 switch (event.type) {

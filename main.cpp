@@ -125,12 +125,19 @@ void load_font() {
 }
 
 void load_rom(char* romRelativePath) {
-    char* wd = SDL_GetBasePath();
-    char* romPath = (char*)malloc(strlen(wd) + strlen(romRelativePath) + 1);
-    strcpy(romPath, wd);
-    strcat(romPath, romRelativePath);
-    std::ifstream file(romPath, std::ios::binary | std::ios::ate);
+    char* romPath;
+    bool romPathAllocated = false;
+    if (romRelativePath[0] == '/') {
+        romPath = romRelativePath;
+    } else {
+        char* wd = SDL_GetBasePath();
+        romPath = new char[strlen(wd) + strlen(romRelativePath) + 1];
+        romPathAllocated = true;
+        strcpy(romPath, wd);
+        strcat(romPath, romRelativePath);
+    }
 
+    std::ifstream file(romPath, std::ios::binary | std::ios::ate);
     if (file.is_open()) {
         std::streampos size = file.tellg();
         char* buffer = new char[size];
@@ -145,7 +152,9 @@ void load_rom(char* romRelativePath) {
 
         pc = ROM_START_ADDRESS;
     }
-    free(romPath);
+    if (romPathAllocated) {
+        delete[] romPath;
+    }
 }
 
 void initialise_display() {

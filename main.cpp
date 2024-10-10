@@ -1,6 +1,5 @@
 #include "SDL2/SDL.h"
 #include "SDL2/SDL_events.h"
-#include "SDL2/SDL_filesystem.h"
 #include "SDL2/SDL_keyboard.h"
 #include "SDL2/SDL_log.h"
 #include "SDL2/SDL_render.h"
@@ -8,8 +7,10 @@
 #include "SDL2/SDL_stdinc.h"
 #include "SDL2/SDL_video.h"
 #include <cstdint>
+#include <cstdlib>
 #include <cstring>
 #include <fstream>
+#include <unistd.h>
 
 #define WHITE 255, 255, 255, 255
 #define BLACK 0, 0, 0, 255
@@ -126,14 +127,17 @@ void load_font() {
 
 void load_rom(char* romRelativePath) {
     char* romPath;
+    char* wd;
     bool romPathAllocated = false;
     if (romRelativePath[0] == '/') {
         romPath = romRelativePath;
     } else {
-        char* wd = SDL_GetBasePath();
+        wd = new char[255];
+        getcwd(wd, 255);
         romPath = new char[strlen(wd) + strlen(romRelativePath) + 1];
         romPathAllocated = true;
         strcpy(romPath, wd);
+        strcat(romPath, "/");
         strcat(romPath, romRelativePath);
     }
 
@@ -153,6 +157,7 @@ void load_rom(char* romRelativePath) {
         pc = ROM_START_ADDRESS;
     }
     if (romPathAllocated) {
+        delete[] wd;
         delete[] romPath;
     }
 }

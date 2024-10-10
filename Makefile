@@ -1,7 +1,7 @@
 CXX=g++
 SDL2CFLAGS= $(sdl2-config --cflags)
 
-CXXFLAGS= -c --std=c++14 -Wall -Werror $(SDL2CFLAGS)
+CXXFLAGS= -O2 -c --std=c++14 -Wall -Werror $(SDL2CFLAGS)
 LDFLAGS= -lSDL2
 
 chippy8: chippy8.o

@@ -1,4 +1,4 @@
-- [ ] Fix input
+- [x] Fix input
 - [x] Fix wrong VF flag value on tests
 - [ ] Implement Display wraparound
 - [ ] Implement clock speed controls

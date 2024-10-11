@@ -162,7 +162,7 @@ void load_rom(char* userRomPath) {
 void initialise_display() {
     SDL_Init(SDL_INIT_VIDEO);
     window = SDL_CreateWindow("Chippy8", 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, 0);
-    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_PRESENTVSYNC);
+    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_ACCELERATED);
 }
 
 uint16_t get_opcode_at_pc() {

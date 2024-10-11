@@ -413,7 +413,6 @@ int main(int argc, char** argv) {
     uint8_t cyclePerFrame = CLOCK_SPEED / displayRefreshRate;
 
     while (runningState) {
-        // Hacky way to have a 720Hz proc, assuming the display is 60Hz
         for (uint8_t i = 0; i < cyclePerFrame; i++) {
             // This is so the keyboard states are updated before every fetch and decode cycle
             while (SDL_PollEvent(&event)) {

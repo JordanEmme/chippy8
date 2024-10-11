@@ -24,9 +24,11 @@ const uint16_t WINDOW_WIDTH = DISPLAY_WIDTH * PIXEL_SIZE;
 const uint16_t WINDOW_HEIGHT = DISPLAY_HEIGHT * PIXEL_SIZE;
 const uint16_t ROM_START_ADDRESS = 0x200;
 const uint16_t MEM_SIZE = 4096;
+const uint16_t CLOCK_SPEED = 700;  //in Hz
 
 SDL_Window* window;
 SDL_Renderer* renderer;
+uint16_t displayRefreshRate;
 bool runningState = true;
 
 uint8_t memory[MEM_SIZE];
@@ -163,6 +165,9 @@ void initialise_display() {
     SDL_Init(SDL_INIT_VIDEO);
     window = SDL_CreateWindow("Chippy8", 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, 0);
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_ACCELERATED);
+    SDL_DisplayMode mode;
+    SDL_GetCurrentDisplayMode(0, &mode);
+    displayRefreshRate = mode.refresh_rate;
 }
 
 uint16_t get_opcode_at_pc() {
@@ -405,9 +410,11 @@ int main(int argc, char** argv) {
     initialise_display();
     keyboardStates = SDL_GetKeyboardState(NULL);
     SDL_Event event;
+    uint8_t cyclePerFrame = CLOCK_SPEED / displayRefreshRate;
+
     while (runningState) {
         // Hacky way to have a 720Hz proc, assuming the display is 60Hz
-        for (uint8_t i = 0; i < 12; i++) {
+        for (uint8_t i = 0; i < cyclePerFrame; i++) {
             // This is so the keyboard states are updated before every fetch and decode cycle
             while (SDL_PollEvent(&event)) {
                 switch (event.type) {

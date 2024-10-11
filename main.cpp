@@ -10,6 +10,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <fstream>
+#include <linux/limits.h>
 #include <unistd.h>
 
 #define WHITE 255, 255, 255, 255
@@ -17,16 +18,18 @@
 
 const uint8_t DISPLAY_WIDTH = 64;
 const uint8_t DISPLAY_HEIGHT = 32;
+const uint16_t DISPLAY_LEN = DISPLAY_WIDTH * DISPLAY_HEIGHT;
 const uint8_t PIXEL_SIZE = 16;
 const uint16_t WINDOW_WIDTH = DISPLAY_WIDTH * PIXEL_SIZE;
 const uint16_t WINDOW_HEIGHT = DISPLAY_HEIGHT * PIXEL_SIZE;
 const uint16_t ROM_START_ADDRESS = 0x200;
+const uint16_t MEM_SIZE = 4096;
 
 SDL_Window* window;
 SDL_Renderer* renderer;
 bool runningState = true;
 
-uint8_t memory[4096];
+uint8_t memory[MEM_SIZE];
 
 uint16_t pc;
 uint16_t I;
@@ -37,7 +40,7 @@ uint16_t sp;
 uint8_t V[16];
 uint16_t opcode;
 
-bool display[DISPLAY_WIDTH * DISPLAY_HEIGHT];
+bool display[DISPLAY_LEN];
 
 uint8_t soundTimer = 60;
 uint8_t delayTimer;
@@ -125,40 +128,34 @@ void load_font() {
     memcpy(memory, font, 80 * sizeof(unsigned char));
 }
 
-void load_rom(char* romRelativePath) {
-    char* romPath;
-    char* wd;
-    bool romPathAllocated = false;
-    if (romRelativePath[0] == '/') {
-        romPath = romRelativePath;
+void get_rom_absolute_path(char* absolutePath, const char* userRomPath) {
+    if (userRomPath[0] == '/') {
+        strcpy(absolutePath, userRomPath);
     } else {
-        wd = new char[255];
+        char wd[PATH_MAX];
         getcwd(wd, 255);
-        romPath = new char[strlen(wd) + strlen(romRelativePath) + 1];
-        romPathAllocated = true;
-        strcpy(romPath, wd);
-        strcat(romPath, "/");
-        strcat(romPath, romRelativePath);
+        strcpy(absolutePath, wd);
+        strcat(absolutePath, "/");
+        strcat(absolutePath, userRomPath);
     }
+}
 
-    std::ifstream file(romPath, std::ios::binary | std::ios::ate);
+void load_rom(char* userRomPath) {
+    char absoluteRomPath[PATH_MAX];
+    get_rom_absolute_path(absoluteRomPath, userRomPath);
+
+    std::ifstream file(absoluteRomPath, std::ios::binary | std::ios::ate);
     if (file.is_open()) {
         std::streampos size = file.tellg();
-        char* buffer = new char[size];
 
         file.seekg(0, std::ios::beg);
-        file.read(buffer, size);
+        if (ROM_START_ADDRESS + size >= MEM_SIZE) {
+            return;
+        }
+        file.read((char*)(memory + ROM_START_ADDRESS), size);
         file.close();
 
-        memcpy(memory + ROM_START_ADDRESS, buffer, size);
-
-        delete[] buffer;
-
         pc = ROM_START_ADDRESS;
-    }
-    if (romPathAllocated) {
-        delete[] wd;
-        delete[] romPath;
     }
 }
 
@@ -193,9 +190,7 @@ void decode_and_execute() {
         case 0x0000:
             if (opcode == 0x00E0) {
                 // clear display
-                for (uint16_t i = 0; i < DISPLAY_HEIGHT * DISPLAY_WIDTH; i++) {
-                    display[i] = false;
-                }
+                memset(display, 0, DISPLAY_LEN);
             } else if (opcode == 0x00EE) {
                 // return from subroutine
                 pc = stack[sp--];
@@ -411,7 +406,7 @@ int main(int argc, char** argv) {
     keyboardStates = SDL_GetKeyboardState(NULL);
     SDL_Event event;
     while (runningState) {
-        // Hacky way to have a 720MHz proc, assuming the display is 60Hz
+        // Hacky way to have a 720Hz proc, assuming the display is 60Hz
         for (uint8_t i = 0; i < 12; i++) {
             // This is so the keyboard states are updated before every fetch and decode cycle
             while (SDL_PollEvent(&event)) {

@@ -1,0 +1,6 @@
+CompileFlags:
+	Add: [
+		   -std=c++17,
+		   -I/usr/include/SDL2,
+		   -D_REENTRANT
+         ]

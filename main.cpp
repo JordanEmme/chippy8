@@ -66,11 +66,11 @@ constexpr SDL_Scancode keyboardMap[16] {
 };
 
 struct {
-    uint16_t displayRefreshRate;
     SDL_Window* window;
     SDL_Renderer* renderer;
-    bool runningState = true;
     const Uint8* keyboardStates;
+    uint16_t displayRefreshRate;
+    bool runningState = true;
 } app;
 
 struct {

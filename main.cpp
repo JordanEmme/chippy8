@@ -9,6 +9,7 @@
 #include <cstdint>
 #include <cstdlib>
 #include <cstring>
+#include <filesystem>
 #include <fstream>
 #include <linux/limits.h>
 #include <unistd.h>
@@ -16,15 +17,15 @@
 #define WHITE 255, 255, 255, 255
 #define BLACK 0, 0, 0, 255
 
-const uint8_t DISPLAY_WIDTH = 64;
-const uint8_t DISPLAY_HEIGHT = 32;
-const uint16_t DISPLAY_LEN = DISPLAY_WIDTH * DISPLAY_HEIGHT;
-const uint8_t PIXEL_SIZE = 16;
-const uint16_t WINDOW_WIDTH = DISPLAY_WIDTH * PIXEL_SIZE;
-const uint16_t WINDOW_HEIGHT = DISPLAY_HEIGHT * PIXEL_SIZE;
-const uint16_t ROM_START_ADDRESS = 0x200;
-const uint16_t MEM_SIZE = 4096;
-const uint16_t CLOCK_SPEED = 700;  //in Hz
+constexpr uint8_t DISPLAY_WIDTH = 64;
+constexpr uint8_t DISPLAY_HEIGHT = 32;
+constexpr uint16_t DISPLAY_LEN = DISPLAY_WIDTH * DISPLAY_HEIGHT;
+constexpr uint8_t PIXEL_SIZE = 16;
+constexpr uint16_t WINDOW_WIDTH = DISPLAY_WIDTH * PIXEL_SIZE;
+constexpr uint16_t WINDOW_HEIGHT = DISPLAY_HEIGHT * PIXEL_SIZE;
+constexpr uint16_t ROM_START_ADDRESS = 0x200;
+constexpr uint16_t MEM_SIZE = 4096;
+constexpr uint16_t CLOCK_SPEED = 700;  //in Hz
 
 SDL_Window* window;
 SDL_Renderer* renderer;
@@ -130,21 +131,9 @@ void load_font() {
     memcpy(memory, font, 80 * sizeof(unsigned char));
 }
 
-void get_rom_absolute_path(char* absolutePath, const char* userRomPath) {
-    if (userRomPath[0] == '/') {
-        strcpy(absolutePath, userRomPath);
-    } else {
-        char wd[PATH_MAX];
-        getcwd(wd, 255);
-        strcpy(absolutePath, wd);
-        strcat(absolutePath, "/");
-        strcat(absolutePath, userRomPath);
-    }
-}
-
-void load_rom(char* userRomPath) {
-    char absoluteRomPath[PATH_MAX];
-    get_rom_absolute_path(absoluteRomPath, userRomPath);
+void load_rom(const std::filesystem::path& userRomPath) {
+    const std::filesystem::path& absoluteRomPath =
+        userRomPath.is_absolute() ? userRomPath : std::filesystem::current_path() / userRomPath;
 
     std::ifstream file(absoluteRomPath, std::ios::binary | std::ios::ate);
     if (file.is_open()) {
@@ -405,7 +394,8 @@ int main(int argc, char** argv) {
         );
         return 1;
     }
-    load_rom(argv[1]);
+    std::filesystem::path romPath = std::filesystem::path {argv[1]};
+    load_rom(romPath);
     load_font();
     initialise_display();
     keyboardStates = SDL_GetKeyboardState(NULL);

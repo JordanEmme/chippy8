@@ -129,7 +129,9 @@ void load_font() {
     memcpy(chip8.memory, font, sizeof(font));
 }
 
-void load_rom(const std::filesystem::path& userRomPath) {
+void load_rom(const char* cliArg) {
+    std::filesystem::path userRomPath = std::filesystem::path {cliArg};
+
     const std::filesystem::path& absoluteRomPath =
         userRomPath.is_absolute() ? userRomPath : std::filesystem::current_path() / userRomPath;
 
@@ -394,8 +396,7 @@ int main(int argc, char** argv) {
         );
         return 1;
     }
-    std::filesystem::path romPath = std::filesystem::path {argv[1]};
-    load_rom(romPath);
+    load_rom(argv[1]);
     load_font();
     initialise_display();
     app.keyboardStates = SDL_GetKeyboardState(NULL);

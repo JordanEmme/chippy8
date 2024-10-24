@@ -81,7 +81,6 @@ struct {
     uint16_t pc;
     uint16_t I;
     uint16_t sp;
-    uint16_t opcode;
     uint8_t soundTimer = 60;
     uint8_t delayTimer;
 } chip8;
@@ -166,27 +165,28 @@ uint16_t get_opcode_at_pc() {
     return (opcode1 << 8) | opcode2;
 }
 
-void fetch() {
-    chip8.opcode = get_opcode_at_pc();
+uint16_t fetch() {
+    uint16_t opcode = get_opcode_at_pc();
     chip8.pc += 2;
+    return opcode;
 }
 
-void decode_and_execute() {
-    uint8_t x = (chip8.opcode & 0x0F00) >> 8;
-    uint8_t y = (chip8.opcode & 0x00F0) >> 4;
+void decode_and_execute(uint16_t opcode) {
+    uint8_t x = (opcode & 0x0F00) >> 8;
+    uint8_t y = (opcode & 0x00F0) >> 4;
 
-    uint8_t n = chip8.opcode & 0x000F;
-    uint8_t kk = chip8.opcode & 0x00FF;
-    uint16_t nnn = chip8.opcode & 0x0FFF;
+    uint8_t n = opcode & 0x000F;
+    uint8_t kk = opcode & 0x00FF;
+    uint16_t nnn = opcode & 0x0FFF;
 
     uint8_t vf;
 
-    switch (chip8.opcode & 0xF000) {
+    switch (opcode & 0xF000) {
         case 0x0000:
-            if (chip8.opcode == 0x00E0) {
+            if (opcode == 0x00E0) {
                 // clear display
                 memset(chip8.display, 0, DISPLAY_LEN);
-            } else if (chip8.opcode == 0x00EE) {
+            } else if (opcode == 0x00EE) {
                 // return from subroutine
                 chip8.pc = chip8.stack[chip8.sp--];
             }
@@ -195,7 +195,7 @@ void decode_and_execute() {
             chip8.pc = nnn;
             break;
         case 0x2000:
-            // call subroutine at chip8.opcode & 0x0FFF
+            // call subroutine at opcode & 0x0FFF
             chip8.stack[++chip8.sp] = chip8.pc;
             chip8.pc = nnn;
             break;
@@ -402,6 +402,7 @@ int main(int argc, char** argv) {
     app.keyboardStates = SDL_GetKeyboardState(NULL);
     SDL_Event event;
     uint8_t cyclePerFrame = CLOCK_SPEED / app.displayRefreshRate;
+    uint16_t opcode;
 
     while (app.runningState) {
         for (uint8_t i = 0; i < cyclePerFrame; i++) {
@@ -412,8 +413,8 @@ int main(int argc, char** argv) {
                         app.runningState = false;
                 }
             }
-            fetch();
-            decode_and_execute();
+            opcode = fetch();
+            decode_and_execute(opcode);
         }
         update_timers();
         update_display();

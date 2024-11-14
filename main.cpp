@@ -131,10 +131,7 @@ void load_font() {
 void load_rom(const char* cliArg) {
     std::filesystem::path userRomPath = std::filesystem::path {cliArg};
 
-    const std::filesystem::path& absoluteRomPath =
-        userRomPath.is_absolute() ? userRomPath : std::filesystem::current_path() / userRomPath;
-
-    std::ifstream file(absoluteRomPath, std::ios::binary | std::ios::ate);
+    std::ifstream file(userRomPath, std::ios::binary | std::ios::ate);
     if (file.is_open()) {
         std::streampos size = file.tellg();
 

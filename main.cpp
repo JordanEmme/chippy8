@@ -1,18 +1,6 @@
 #include "SDL.h"
-#include "SDL_events.h"
-#include "SDL_keyboard.h"
-#include "SDL_log.h"
-#include "SDL_render.h"
-#include "SDL_scancode.h"
-#include "SDL_stdinc.h"
-#include "SDL_video.h"
-#include <cstdint>
-#include <cstdlib>
-#include <cstring>
 #include <filesystem>
 #include <fstream>
-#include <linux/limits.h>
-#include <unistd.h>
 
 #define WHITE 255, 255, 255, 255
 #define BLACK 0, 0, 0, 255
